@@ -34,8 +34,6 @@ class Sim(object):
         self.radii = np.zeros(1,int)
         self.radii2 = np.zeros(1,int)
         
-        self.monte_distances2 = np.empty((0,self.Nmonte_points))
-        self.monte_distances2 = self.add_monte_distance2(self.nodes[0],self.monte_points)
 
     def simulate(self):
         path = False #either a path from top to bottom, or left to right
@@ -122,15 +120,9 @@ class Sim(object):
                 self.G.add_edge('right',i)
 
     def find_distances(self):
-        matrix = np.zeros((self.Nnodes,self.Nnodes))
-        for i in range(self.Nnodes):
-            n1 = self.nodes[i]
-            for j in range(i+1,self.Nnodes):
-                n2 = self.nodes[j]
-                r2 = self.distance2(n1, n2)
-                matrix[i,j] = r2
-                matrix[j,i] = r2
-        return matrix
+        
+        
+        return np.sum((self.nodes[:,np.newaxis,:]-self.nodes[np.newaxis,:,:])**2,2) 
 
     def circles_touching(self):
         radius_matrix = self.radii + self.radii[:,np.newaxis] 
@@ -140,24 +132,12 @@ class Sim(object):
         return touch_matrix
 
     def add_nodes(self, nodes, N):
-        added = 0
-        for i in range(N):
-            x = np.random.random() * self.size
-            y = np.random.random() * self.size
-            add = True
-            for j in range(self.Nnodes):
-                if self.distance([x,y],nodes[j]) < self.radii[j]:
-                    add = False
-            if add: 
-                nodes = np.vstack((nodes, [x,y] ))
-                added += 1
-        self.Nnodes += added
-
         new_nodes = np.random.random(2*N).reshape(N,2) * self.size
-        dists = (nodes[:, np.newaxis,:] - new_nodes[np.newaxis, :, :])**2
-        not_to_add = np.any( dists > self.radii2[:,np.newaxis])
-        nodes = np.vstack(nodes, nodes[np.where(not_to_add==0)] )
-        
+        dists = np.sum((nodes[:, np.newaxis,:] - new_nodes[np.newaxis, :, :])**2,2)
+        not_to_add = np.any( dists < self.radii2[:,np.newaxis],0)
+        nodes = np.vstack(( nodes, new_nodes[np.where(not_to_add==0)] ))
+        added = N-np.sum(not_to_add)
+        self.Nnodes += added
         return nodes, added
 
     def distance2(self, r1, r2):
