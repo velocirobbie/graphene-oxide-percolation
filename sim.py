@@ -27,10 +27,9 @@ class Sim(object):
         
         self.monte_points = self.create_monte_points()       
         
-        self.Nnodes = 0
-        self.nodes, added = self.add_nodes([],1)
-        if added != 1:
-            raise Exception
+        self.nodes = np.random.random(2).reshape(1,2) * self.size
+        self.Nnodes = 1
+        
         self.distance_matrix = self.find_distances()
         self.radii = np.zeros(1,int)
         self.radii2 = np.zeros(1,int)
@@ -50,38 +49,9 @@ class Sim(object):
                     self.radii2 = np.append(self.radii2,[0]*added)
                     for i in range(added):
                         self.monte_distances2 = self.add_monte_distance2(self.nodes[-i-1],self.monte_points)
-        #            b = self.add_monte_distance2_2(self.nodes[-added:],self.monte_points)
-        #            for i in range(len(a)):
-        #                for j in range(len(a[i])):
-        #                    if a[i][j] != b[i][j]: raise Exception
-
-            #if nodes_to_add: print float(self.rate) / self.area, nodes_to_add, added
 
             nodes_to_add = self.increment()
-            """            
-            if self.all_connected_top:
-                path, self.all_connected_top = self.find_path(
-                                                 self.all_connected_top,
-                                                 self.touching_bottom)
-            elif self.touching_top:
-                path, self.all_connected_top = self.find_path(
-                                                 self.touching_top,
-                                                 self.touching_bottom)
-            if path:
-                break
-
-            if self.all_connected_left:
-                path, self.all_connected_left = self.find_path(
-                                                 self.all_connected_left,
-                                                 self.touching_right)
-            elif self.touching_left:
-                path, self.all_connected_left = self.find_path(
-                                                 self.touching_left,
-                                                 self.touching_right)
-
-            if path: 
-                break
-            """
+            
             if self.check_path(self.G,'top','bottom',{'left','right'}): break
             if self.check_path(self.G,'left','right',{'top','bottom'}): break
 
@@ -102,10 +72,7 @@ class Sim(object):
                       f.write(str(self.nodes[i][0]/self.size)+'\t'+
                             str(self.nodes[i][1]/self.size)+'\t'+
                             str(float(r)/self.size)+'\n')
-            #with open('fullmontelist','w') as f:
-            #     for point in self.monte_points:
-            #         f.write(str(point[0]/self.size)+'\t'+
-            #                 str(point[1]/self.size)+'\n')
+    
     def check_path(self,graph,source,target,ignore):
         sub_graph = graph.subgraph( set(graph.nodes) - ignore)
         if nx.has_path(sub_graph,source,target):
@@ -186,11 +153,6 @@ class Sim(object):
         self.radii += self.dr
         self.radii2 = self.radii * self.radii
         if len(self.radii) != self.Nnodes: raise Exception(self.Nnodes,self.radii)
-        if len(self.radii) != len(self.radii2): raise Exception
-        
-        #new_coverage = self.calc_monte_coverage()
-        #self.dA += new_coverage - self.coverage 
-        #self.coverage = new_coverage  
         
         self.touch_matrix = self.circles_touching()
         self.G.add_edges_from( np.transpose(np.where(self.touch_matrix==1)) )
@@ -242,7 +204,7 @@ class Sim(object):
                 if self.distance([x,y],nodes[j]) < self.radii[j]:
                     add = False
             if add: 
-                nodes += [ [x,y] ]
+                nodes = np.vstack((nodes, [x,y] ))
                 added += 1
         self.Nnodes += added
 
