@@ -80,75 +80,19 @@ class Sim(object):
             path = False
         return path
             
-
     def create_monte_points(self):
         N = self.Nmonte_points 
         points = np.random.rand(N,2)
-        #with open('monte','w') as f:
-        #    for point in points:
-        #        f.write(str(point[0])+'\t'+str(point[1])+'\n')
         return points * self.size
     
-    def add_monte_distance2_2(self,nodes,points):
-        #x = points[:,0] - node[0]
-        #y = points[:,1] - node[1]
-        #dist2 = x*x + y*y
-
-        # square distance between all pairs of coords in lists nodes and points
-        print 'nodes',nodes
-        print 'points',points
-        dist2_i = np.sum((nodes[:, None,:] - points[None, :, :])**2,2)
-        return np.vstack((self.monte_distances2,dist2))
-
     def calc_monte_distances2(self, nodes, points):
         return np.sum((nodes[:, None,:] - points[None, :, :])**2,2)
-
-    def add_monte_distance2(self,node,points):
-        x = points[:,0] - node[0]
-        y = points[:,1] - node[1]
-        dist2 = x*x + y*y
-
-        #dist = points - node
-        #dist2 = np.sum(dist*dist,1)
-        return np.vstack((self.monte_distances2,dist2))
 
     def calc_monte_coverage(self):
         coverage_matrix = self.monte_distances2 < self.radii2[:,np.newaxis]
         coverage = np.sum(coverage_matrix,0) > 0
         return float(np.sum(coverage)) / self.Nmonte_points
 
-    def find_path(self, all_connected, touching_opposite_boundary):
-        ispath = False
-        #     print i, self.touching_top
-        #     print self.radius, already_checked
-        searching = True 
-        to_search = all_connected
-        last_connected = set()
-        while searching:
-            to_search = all_connected - last_connected
-            last_connected = set(all_connected)
-            for j in to_search: 
-                for k in range(self.Nnodes):
-                    if self.touch_matrix[j,k]:
-                        all_connected |= { k }
-
-            if all_connected & touching_opposite_boundary:
-                ispath = True
-                searching = False
-            if len(last_connected) == len(all_connected):
-                break
-        #print self.radius,path
-        #print 'bot',self.touching_bottom
-        #print '!  ',bool(connected &self.touching_bottom )
-        #print ispath
-        if ispath  and self.graph:
-            with open('monte.dat','w') as f:
-                for i in all_connected:
-                    if self.radii[i] != 0:
-                        f.write(str(self.nodes[i][0]/(self.size))+'\t'+
-                                str(self.nodes[i][1]/(self.size))+'\n')
-        return ispath, all_connected
- 
 
     def increment(self):
         self.radii += self.dr
@@ -209,8 +153,11 @@ class Sim(object):
                 added += 1
         self.Nnodes += added
 
-        #if added:
-        #    print self.radii[0],added
+        new_nodes = np.random.random(2*N).reshape(N,2) * self.size
+        dists = (nodes[:, np.newaxis,:] - new_nodes[np.newaxis, :, :])**2
+        not_to_add = np.any( dists > self.radii2[:,np.newaxis])
+        nodes = np.vstack(nodes, nodes[np.where(not_to_add==0)] )
+        
         return nodes, added
 
     def distance2(self, r1, r2):
