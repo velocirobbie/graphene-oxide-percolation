@@ -1,3 +1,4 @@
+import networkx as nx
 import numpy as np
 import scipy 
 
@@ -13,10 +14,9 @@ class Sim(object):
         self.dr = 1 
 
         self.coverage = 0
-        self.touching_top = set()
-        self.touching_bottom = set()
-        self.touching_left = set()
-        self.touching_right = set()
+
+        self.G = nx.Graph()
+        self.G.add_nodes_from(['top','bottom','left','right'])
 
         self.Nnodes = 0
         self.radii = np.zeros(1,int)
@@ -58,7 +58,7 @@ class Sim(object):
             #if nodes_to_add: print float(self.rate) / self.area, nodes_to_add, added
 
             nodes_to_add = self.increment()
-                        
+            """            
             if self.all_connected_top:
                 path, self.all_connected_top = self.find_path(
                                                  self.all_connected_top,
@@ -81,6 +81,9 @@ class Sim(object):
 
             if path: 
                 break
+            """
+            if self.check_path(self.G,'top','bottom',{'left','right'}): break
+            if self.check_path(self.G,'left','right',{'top','bottom'}): break
 
         self.coverage = self.calc_monte_coverage()#self.calc_coverage(ispath=True)
         
@@ -103,6 +106,14 @@ class Sim(object):
             #     for point in self.monte_points:
             #         f.write(str(point[0]/self.size)+'\t'+
             #                 str(point[1]/self.size)+'\n')
+    def check_path(self,graph,source,target,ignore):
+        sub_graph = graph.subgraph( set(graph.nodes) - ignore)
+        if nx.has_path(sub_graph,source,target):
+            path = True
+        else:
+            path = False
+        return path
+            
 
     def create_monte_points(self):
         N = self.Nmonte_points 
@@ -163,7 +174,7 @@ class Sim(object):
         #print '!  ',bool(connected &self.touching_bottom )
         #print ispath
         if ispath  and self.graph:
-            with open('graph','w') as f:
+            with open('monte.dat','w') as f:
                 for i in all_connected:
                     if self.radii[i] != 0:
                         f.write(str(self.nodes[i][0]/(self.size))+'\t'+
@@ -182,6 +193,7 @@ class Sim(object):
         #self.coverage = new_coverage  
         
         self.touch_matrix = self.circles_touching()
+        self.G.add_edges_from( np.transpose(np.where(self.touch_matrix==1)) )
         self.update_touching_boundary()
 
         add = np.random.poisson( float(self.rate) / self.size) 
@@ -194,13 +206,13 @@ class Sim(object):
             y = self.nodes[i][1]
             r = self.radii[i]
             if y - r < 0:
-                self.touching_bottom |= {i}
+                self.G.add_edge('bottom',i)
             if y + r > self.size:
-                self.touching_top |= {i}
+                self.G.add_edge('top',i)
             if x - r < 0:
-                self.touching_left |= {i}
+                self.G.add_edge('left',i)
             if x + r > self.size:
-                self.touching_right |= {i}
+                self.G.add_edge('right',i)
 
     def find_distances(self):
         matrix = np.zeros((self.Nnodes,self.Nnodes))
