@@ -47,15 +47,14 @@ class Sim(object):
                     self.distance_matrix = self.find_distances()
                     self.radii = np.append(self.radii,[0]*added)
                     self.radii2 = np.append(self.radii2,[0]*added)
-                    for i in range(added):
-                        self.monte_distances2 = self.add_monte_distance2(self.nodes[-i-1],self.monte_points)
 
             nodes_to_add = self.increment()
             
             if self.check_path(self.G,'top','bottom',{'left','right'}): break
             if self.check_path(self.G,'left','right',{'top','bottom'}): break
-
-        self.coverage = self.calc_monte_coverage()#self.calc_coverage(ispath=True)
+        self.monte_distances2 = self.calc_monte_distances2(self.nodes,
+                                                           self.monte_points)
+        self.coverage = self.calc_monte_coverage()
         
         if self.graph:
             with open('nodes.dat','w') as f:
@@ -101,6 +100,8 @@ class Sim(object):
         dist2_i = np.sum((nodes[:, None,:] - points[None, :, :])**2,2)
         return np.vstack((self.monte_distances2,dist2))
 
+    def calc_monte_distances2(self, nodes, points):
+        return np.sum((nodes[:, None,:] - points[None, :, :])**2,2)
 
     def add_monte_distance2(self,node,points):
         x = points[:,0] - node[0]
