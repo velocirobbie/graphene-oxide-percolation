@@ -4,13 +4,14 @@ import scipy
 
 class Sim(object):
     def __init__(self, rate, size, res_factor,
-                 graph=False, Nmonte_points=10000):
+                 graph=False, Nmonte_points=10000,error=False):
         self.rate = rate 
         self.size = size
         self.area = size * size 
         self.res_factor = res_factor # for final coverage estimation
         self.graph = graph
         self.Nmonte_points=Nmonte_points
+        self.error = error
         self.dr = 1 
 
         self.coverage = 0
@@ -21,8 +22,6 @@ class Sim(object):
         self.Nnodes = 0
         self.radii = np.zeros(1,int)
         self.radii2 = np.zeros(1,int)
-        
-        self.monte_points = self.create_monte_points()       
         
         self.nodes = np.random.random(2).reshape(1,2) * self.size
         self.Nnodes = 1
@@ -45,10 +44,19 @@ class Sim(object):
             if self.check_path(self.G,'top','bottom',{'left','right'}): break
             if self.check_path(self.G,'left','right',{'top','bottom'}): break
 
+        self.monte_points = self.create_monte_points()       
         self.monte_distances2 = self.calc_monte_distances2(self.nodes,
                                                            self.monte_points)
         self.coverage = self.calc_monte_coverage()
         
+        if self.error:
+            self.radii -= self.dr
+            self.radii2 = self.radii * self.radii
+            if -1 in self.radii: raise Exception
+            self.error = self.coverage - self.calc_monte_coverage()
+            self.radii += self.dr
+            self.radii2 = self.radii * self.radii
+
         if self.graph:
             with open('nodes.dat','w') as f:
                 for i in range(self.Nnodes):
@@ -84,7 +92,7 @@ class Sim(object):
         return points * self.size
     
     def calc_monte_distances2(self, nodes, points):
-        return np.sum((nodes[:, None,:] - points[None, :, :])**2,2)
+        return np.sum((nodes[:, np.newaxis,:] - points[np.newaxis, :, :])**2,2)
 
     def calc_monte_coverage(self):
         coverage_matrix = self.monte_distances2 < self.radii2[:,np.newaxis]
@@ -144,5 +152,7 @@ class Sim(object):
         print 'Coverage   =',self.coverage
         print 'Nsites     =',self.Nnodes
         print 'Max radius =',self.radii[0]
+        if self.error is not False:
+            print 'Error      =',self.error
         #print 'Niter      =',self.radii[0]
 

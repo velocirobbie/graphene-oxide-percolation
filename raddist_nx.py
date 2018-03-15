@@ -3,36 +3,25 @@ import numpy as np
 #a = Sim(4,20)
 import sys
 
-N = 5
-epoch = 100
+N = 7
+epoch = 1000
 size = 1000 #length of box
-rates = [10**i for i in range(N)]
-radii = np.empty((N,epoch))
-coverage = np.empty((N,epoch))
+rates = [0.1 * 10**i for i in range(N)]
+radii = np.zeros((size+1,N))
+coverage = np.zeros((N,epoch))
 res=1
-"""
-rhistsize = 50
-rbinsize = size / rhistsize
-rhist = np.zeros((rhistsize,len(rates)))
-rbins = np.arange(rbinsize/2, rbinsize/2 + rhistsize*rbinsize, 
-                  rbinsize)
 
-chistsize = 50
-cbinsize = 1.0 / chistsize
-chist = np.zeros((chistsize, len(rates)))
-cbins = np.arange(cbinsize/2, cbinsize/2 + chistsize*cbinsize,
-                  cbinsize)
-"""
-
-np.random.seed(int(sys.argv[1]))
+#np.random.seed(int(sys.argv[1]))
 for i in range(N):
     print rates[i] ,'--==='
     for j in range(epoch):
-        #if not j%100: print j
-        a = Sim(rates[i], size, res,Nmonte_points=1000,graph=False)
+        if not j%100: print j
+        a = Sim(rates[i], size, res,Nmonte_points=10000,graph=False,error=False)
         a.simulate()
-#        a.print_output()
+        #a.print_output()
         coverage[i,j] = a.coverage
+        for r in a.radii:
+            radii[r,i] += 1.0/len(a.radii)
     print np.sum(coverage[i])/epoch, np.std(coverage[i])
 
 with open('coveragees.dat','w') as f:
