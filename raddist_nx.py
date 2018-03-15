@@ -3,8 +3,8 @@ import numpy as np
 #a = Sim(4,20)
 import sys
 
-N = 6
-epoch = 10
+N = 5
+epoch = 100
 size = 1000 #length of box
 rates = [10**i for i in range(N)]
 radii = np.empty((N,epoch))
