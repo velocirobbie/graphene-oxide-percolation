@@ -4,7 +4,7 @@ import numpy as np
 import sys
 
 size = [1000] #length of box
-rates = [10**i for i in range(4)]
+rates = [10**i for i in range(5)]
 res  = 1
 """
 rhistsize = 50

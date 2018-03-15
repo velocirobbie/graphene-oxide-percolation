@@ -55,6 +55,7 @@ class Sim(object):
         self.coverage = self.calc_monte_coverage()
         
         if self.graph:
+            
             with open('nodes.dat','w') as f:
                 for i in range(self.Nnodes):
                     r = self.radii[i]
@@ -69,11 +70,16 @@ class Sim(object):
                       f.write(str(self.nodes[i][0]/self.size)+'\t'+
                             str(self.nodes[i][1]/self.size)+'\t'+
                             str(float(r)/self.size)+'\n')
-    
+
     def check_path(self,graph,source,target,ignore):
         sub_graph = graph.subgraph( set(graph.nodes) - ignore)
         if nx.has_path(sub_graph,source,target):
             path = True
+            if self.graph:
+                spath = nx.shortest_path(sub_graph,source,target)
+                with open('path.dat','w') as f:
+                    for node in [self.nodes[i]/self.size for i in spath[1:-1]]:
+                        f.write(str(node[0])+'\t'+str(node[1])+'\n')
         else:
             path = False
         return path
@@ -120,8 +126,6 @@ class Sim(object):
                 self.G.add_edge('right',i)
 
     def find_distances(self):
-        
-        
         return np.sum((self.nodes[:,np.newaxis,:]-self.nodes[np.newaxis,:,:])**2,2) 
 
     def circles_touching(self):
