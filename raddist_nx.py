@@ -3,10 +3,10 @@ import numpy as np
 #a = Sim(4,20)
 import sys
 
-N = 7
+N = 15
 epoch = 1000
 size = 1000 #length of box
-rates = [0.1 * 10**i for i in range(N)]
+rates = [2 **i for i in range(N)]
 radii = np.zeros((size+1,N))
 coverage = np.zeros((N,epoch))
 res=1
@@ -24,7 +24,7 @@ for i in range(N):
             radii[r,i] += 1.0/len(a.radii)
     print np.sum(coverage[i])/epoch, np.std(coverage[i])
 
-with open('coveragees.dat','w') as f:
+with open('coverages.dat','w') as f:
     for line in coverage:
         for i in line:
             f.write(str(i)+'\t')
