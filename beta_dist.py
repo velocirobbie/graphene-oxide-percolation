@@ -1,4 +1,6 @@
 #from scipy.stats import beta
+import sys
+sys.path.append('/Users/robertsinclair/python_bin/')
 from scipy.optimize import curve_fit
 from scipy.special import gamma
 from bootstrap import Bootstrap_method

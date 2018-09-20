@@ -5,21 +5,19 @@ import scipy
 class Sim(object):
     def __init__(self, rate, size, res_factor,
                  graph=False, Nmonte_points=10000,error=False):
-        self.rate = rate 
+        self.rate = rate # nucleation rate
         self.size = size
         self.area = size * size 
-        self.res_factor = res_factor # for final coverage estimation
-        self.graph = graph
-        self.Nmonte_points=Nmonte_points
-        self.error = error
-        self.dr = 1 
+        self.Nmonte_points = Nmonte_points
+        self.graph = graph # Whether to write files to draw the system
+        self.error = error # Whether to calculate the timestep error
+        self.dr = 1
 
         self.coverage = 0
 
         self.G = nx.Graph()
         self.G.add_nodes_from(['top','bottom','left','right'])
 
-        self.Nnodes = 0
         self.radii = np.zeros(1,int)
         self.radii2 = np.zeros(1,int)
         
@@ -29,20 +27,28 @@ class Sim(object):
         self.distance_matrix = np.zeros((1,1))
 
     def simulate(self):
-        path = False #either a path from top to bottom, or left to right
+        path = False # is there a path either from top to bottom, or left to right
         nodes_to_add = 0
         while not path:
             if nodes_to_add:
                 self.nodes, added = self.add_nodes(self.nodes,nodes_to_add)
                 if added: 
+                    # if a node was succesfully added, update lists
                     self.distance_matrix = self.find_distances(added)
                     self.radii = np.append(self.radii,[0]*added)
                     self.radii2 = np.append(self.radii2,[0]*added)
-
-            nodes_to_add = self.increment()
             
-            if self.check_path(self.G,'top','bottom',{'left','right'}): break
-            if self.check_path(self.G,'left','right',{'top','bottom'}): break
+            # increment island sizes and check which islands are connected 
+            self.radii += self.dr
+            self.radii2 = self.radii * self.radii
+            self.touch_matrix = self.circles_touching()
+            self.G.add_edges_from( np.transpose(np.where(self.touch_matrix==1)) )
+            self.update_touching_boundary()
+            
+            if self.check_path(self.G,'top','bottom',{'left','right'}): path = True
+            if self.check_path(self.G,'left','right',{'top','bottom'}): path = True
+            
+            nodes_to_add = np.random.poisson( float(self.rate) / self.size) 
 
         self.monte_points = self.create_monte_points()       
         self.monte_distances2 = self.calc_monte_distances2(self.nodes,
@@ -50,6 +56,7 @@ class Sim(object):
         self.coverage = self.calc_monte_coverage()
         
         if self.error:
+            # calculate the coverate in the previous step, error is the difference
             self.radii -= self.dr
             self.radii2 = self.radii * self.radii
             if -1 in self.radii: raise Exception
@@ -99,16 +106,7 @@ class Sim(object):
         coverage = np.sum(coverage_matrix,0) > 0
         return float(np.sum(coverage)) / self.Nmonte_points
 
-    def increment(self):
-        self.radii += self.dr
-        self.radii2 = self.radii * self.radii
-        #if len(self.radii) != self.Nnodes: raise Exception(self.Nnodes,self.radii)
-        self.touch_matrix = self.circles_touching()
-        self.G.add_edges_from( np.transpose(np.where(self.touch_matrix==1)) )
-        self.update_touching_boundary()
-        add = np.random.poisson( float(self.rate) / self.size) 
-        return add
-        
+       
     def update_touching_boundary(self):
         for i in range(self.Nnodes):
             x = self.nodes[i][0]
@@ -130,7 +128,6 @@ class Sim(object):
         dists = np.hstack((self.distance_matrix,new_dists[:self.Nnodes-added]))
         dists = np.vstack((dists,new_dists.T))
         return dists
-        #return np.sum((self.nodes[:,np.newaxis,:]-self.nodes[np.newaxis,:,:])**2,2) 
 
     def circles_touching(self):
         radius_matrix = self.radii + self.radii[:,np.newaxis] 
@@ -154,5 +151,4 @@ class Sim(object):
         print 'Max radius =',self.radii[0]
         if self.error is not False:
             print 'Error      =',self.error
-        #print 'Niter      =',self.radii[0]
 

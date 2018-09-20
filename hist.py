@@ -35,4 +35,3 @@ with open('hist.dat','w') as f:
             f.write(str(j)+'\t')
         f.write('\n')
 
-
