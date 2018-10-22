@@ -3,7 +3,7 @@ import numpy as np
 import scipy 
 
 class Sim(object):
-    def __init__(self, rate, size, res_factor,
+    def __init__(self, rate, size, 
                  graph=False, Nmonte_points=10000,error=False):
         self.rate = rate # nucleation rate
         self.size = size
