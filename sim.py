@@ -3,23 +3,23 @@ import numpy as np
 import scipy 
 
 class Sim(object):
-    def __init__(self, rate, size, 
+    def __init__(self, rate, dr, 
                  graph=False, Nmonte_points=10000,error=False):
         self.rate = rate # nucleation rate
-        self.size = size
-        self.area = size * size 
+        self.size = 1 # square size
+        self.area = self.size ** 2 
         self.Nmonte_points = Nmonte_points
         self.graph = graph # Whether to write files to draw the system
         self.error = error # Whether to calculate the timestep error
-        self.dr = 1
+        self.dr = dr # nodes' radius grows by this much each step
 
         self.coverage = 0
 
         self.G = nx.Graph()
         self.G.add_nodes_from(['top','bottom','left','right'])
 
-        self.radii = np.zeros(1,int)
-        self.radii2 = np.zeros(1,int)
+        self.radii = np.zeros(1,float)
+        self.radii2 = np.zeros(1,float)
         
         self.nodes = np.random.random(2).reshape(1,2) * self.size
         self.Nnodes = 1
@@ -48,7 +48,7 @@ class Sim(object):
             if self.check_path(self.G,'top','bottom',{'left','right'}): path = True
             if self.check_path(self.G,'left','right',{'top','bottom'}): path = True
             
-            nodes_to_add = np.random.poisson( float(self.rate) / self.size) 
+            nodes_to_add = np.random.poisson( float(self.rate) * self.dr) 
 
         self.monte_points = self.create_monte_points()       
         self.monte_distances2 = self.calc_monte_distances2(self.nodes,
@@ -56,11 +56,14 @@ class Sim(object):
         self.coverage = self.calc_monte_coverage()
         
         if self.error:
-            # calculate the coverate in the previous step, error is the difference
+            # calculate the coverage in the previous step
+            # corrected coverage is the average of min and max coverage
             self.radii -= self.dr
             self.radii2 = self.radii * self.radii
-            if -1 in self.radii: raise Exception
-            self.error = self.coverage - self.calc_monte_coverage()
+            max_coverage = self.coverage
+            min_coverage = self.calc_monte_coverage()
+            self.error = (max_coverage - min_coverage)/2
+            self.corrected_coverage = self.coverage - self.error
             self.radii += self.dr
             self.radii2 = self.radii * self.radii
 
@@ -150,5 +153,6 @@ class Sim(object):
         print 'Nsites     =',self.Nnodes
         print 'Max radius =',self.radii[0]
         if self.error is not False:
+            print 'Corrected coverage =',self.corrected_coverage
             print 'Error      =',self.error
 
