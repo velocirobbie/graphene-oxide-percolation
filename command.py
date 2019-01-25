@@ -1,7 +1,5 @@
 from sim import Sim
 import numpy as np
-#a = Sim(4,20)
-import sys
 
 dr = 0.001
 rate = 10
