@@ -76,13 +76,6 @@ class Sim(object):
                       f.write(str(self.nodes[i][0]/self.size)+'\t'+
                             str(self.nodes[i][1]/self.size)+'\t'+
                             str(float(r)/self.size)+'\n')
-            with open('nodes1.dat','w') as f:
-                for i in range(self.Nnodes):
-                    r = self.radii[i]-1
-                    if r != 0:
-                      f.write(str(self.nodes[i][0]/self.size)+'\t'+
-                            str(self.nodes[i][1]/self.size)+'\t'+
-                            str(float(r)/self.size)+'\n')
 
     def check_path(self,graph,source,target,ignore):
         sub_graph = graph.subgraph( set(graph.nodes) - ignore)
@@ -90,13 +83,24 @@ class Sim(object):
             path = True
             if self.graph:
                 spath = nx.shortest_path(sub_graph,source,target)
-                with open('path.dat','w') as f:
-                    for node in [self.nodes[i]/self.size for i in spath[1:-1]]:
-                        f.write(str(node[0])+'\t'+str(node[1])+'\n')
+                self.output_path(spath, source)
         else:
             path = False
         return path
             
+    def output_path(self, spath, source):
+        nodes_in_path = [self.nodes[i]/self.size for i in spath[1:-1]]
+        if source == 'top':
+            start = [nodes_in_path[0][0]  ,1]
+            end   = [nodes_in_path[-1][0] ,0]
+        elif source == 'left':
+            start = [0,  nodes_in_path[0][1] ]
+            end   = [1, nodes_in_path[-1][1] ]
+        nodes_in_path = [start] + nodes_in_path + [end]
+        with open('path.dat','w') as f:
+            for node in nodes_in_path:
+                f.write(str(node[0])+'\t'+str(node[1])+'\n')
+
     def create_monte_points(self):
         N = self.Nmonte_points 
         points = np.random.rand(N,2)
