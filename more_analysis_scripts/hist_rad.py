@@ -1,5 +1,4 @@
 import sys
-sys.path.append('/Users/robertsinclair/python_bin/')
 from histogram import Histogram
 import numpy as np
 from bootstrap import Bootstrap_method
