@@ -25,3 +25,11 @@ gnuplot> pl 'nodes.dat' w circ, 'path.dat' w l
 ```
 
  ![Example simulation output](example_sim.png)
+
+### Ensembles
+
+In the directory `scripts_for_paper` are tools for running and analysing ensembles of these simulations.
+
+`ensemble.py` will run a given number of simulations, `epochs`, and collate the coverages and errros into two files `coverages.dat` and `errors.dat`. To sweep several rates of nucleation (chi in the paper) we used a simple bash script to execute them `sub.sh`.
+
+The resultant directories created with `sub.sh` can be analysed with `analyse.py` which will calculate the average coverages at percolation thresholds, distributions, standard deviations and confidence in these coverages. 

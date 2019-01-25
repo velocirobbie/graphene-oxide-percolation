@@ -1,6 +1,5 @@
 from sim import Sim
 import numpy as np
-#a = Sim(4,20)
 import sys
 
 epoch = 1000
