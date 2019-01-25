@@ -13,18 +13,18 @@ class Sim(object):
         self.error = error # Whether to calculate the timestep error
         self.dr = dr # nodes' radius grows by this much each step
 
-        self.coverage = 0
+        self.coverage = 0 # fraction of graphene sheet oxidised
 
         self.G = nx.Graph()
         self.G.add_nodes_from(['top','bottom','left','right'])
 
         self.radii = np.zeros(1,float)
-        self.radii2 = np.zeros(1,float)
+        self.radii2 = np.zeros(1,float) # radii squared
         
-        self.nodes = np.random.random(2).reshape(1,2) * self.size
+        self.nodes = np.random.random(2).reshape(1,2) * self.size # x,y of node 1
         self.Nnodes = 1
         
-        self.distance_matrix = np.zeros((1,1))
+        self.distance_matrix = np.zeros((1,1)) # NxN matrix distances between nodes
 
     def simulate(self):
         path = False # is there a path either from top to bottom, or left to right
@@ -49,7 +49,8 @@ class Sim(object):
             if self.check_path(self.G,'left','right',{'top','bottom'}): path = True
             
             nodes_to_add = np.random.poisson( float(self.rate) * self.dr) 
-
+        
+        # calculate coverage now system is over percolation threshold 
         self.monte_points = self.create_monte_points()       
         self.monte_distances2 = self.calc_monte_distances2(self.nodes,
                                                            self.monte_points)
