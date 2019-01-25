@@ -1,5 +1,7 @@
 # Graphene Oxide Percolation Analysis
 
+This program takes an idealised square graphene flake and propogates an oxidation reaction based on the finding in the research by Sinclair (currently in review). Oxidised islands are nucleated systematically and graphene oxide areas propogate from these points. The simulation stops when the percolation threshold has been reached. Ensembles of these systems give an average impression on when graphene's properties are degrated. 
+
 Generate the simplest simulation with:
 ```
 python2.7 command.py
