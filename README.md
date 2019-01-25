@@ -24,4 +24,4 @@ gnuplot> set size square; set xr [0:1]; set yr [0:1]
 gnuplot> pl 'nodes.dat' w circ, 'path.dat' w l
 ```
 
- ![Example simulation output](sim.png)
+ ![Example simulation output](example_sim.png)
