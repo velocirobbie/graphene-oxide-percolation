@@ -8,11 +8,11 @@ python2.7 command.py
 ```
 `command.py` simply runs one simulation and prints a summary of the simulation, for eample:
 ```
-Coverage   = 0.7224
-Nsites     = 5
-Max radius = 0.431
-Corrected coverage = 0.72095
-Error      = 0.00145
+Coverage   = 0.6266
+Nsites     = 8
+Max radius = 0.268
+Corrected coverage = 0.62395
+Error      = 0.00265
 ```
 The `Coverage` is the fraction of the squre covered by islands when a path was made from one edge to its oposite. The `Corrected coverage` is the half way between the coverage above and the coverage on the previous step; the `Error` is half the difference between these values.
 
