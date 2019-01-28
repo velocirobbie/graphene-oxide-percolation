@@ -1,6 +1,6 @@
 # Graphene Oxide Percolation Analysis
 
-This program takes an idealised square graphene flake and propogates an oxidation reaction based on the finding in the research by Sinclair (currently in review). Oxidised islands are nucleated systematically and graphene oxide areas propogate from these points. The simulation stops when the percolation threshold has been reached. Ensembles of these systems give an average impression on when graphene's properties are degrated. 
+This is a python2.7 program which takes an idealised square graphene flake and propogates an oxidation reaction based on the finding in the research by Sinclair (paper currently in review). Oxidised islands are nucleated systematically and graphene oxide areas propogate from these points. The simulation stops when the percolation threshold has been reached. Ensembles of these systems give an average impression on when graphene's properties are degrated. 
 
 Generate the simplest simulation with:
 ```
@@ -28,7 +28,7 @@ gnuplot> pl 'nodes.dat' w circ, 'path.dat' w l
 
 ### Ensembles
 
-In the directory `scripts_for_paper` are tools for running and analysing ensembles of these simulations.
+In the directory `scripts_for_paper/` are tools for running and analysing ensembles of these simulations.
 
 `ensemble.py` will run a given number of simulations, `epochs`, and collate the coverages and errros into two files `coverages.dat` and `errors.dat`. To sweep several rates of nucleation (chi in the paper) we used a simple bash script to execute them `sub.sh`.
 
